@@ -2,7 +2,7 @@
   'use strict';
 
   // ===== Config (API-FREE) =====
-  const VERSION = 'v7.0';
+  const VERSION = 'v7.1';
   const UI_TICK_MS = 500;                 // UI refresh tick
   const REOPEN_DELAY_MS = 2000;           // normal reopen delay (non-depletion commits)
   const FULL_DEPLETION_REOPEN_MS = 35000; // wait ~+1 cooldown before reopening palette after "tinta acabou"
@@ -77,7 +77,12 @@
       status_run:'RODANDO',
       status_pause:'PAUSADO',
       helpText:'Dica: marque posição, ative overlay pra conferir e clique Iniciar. Erros aparecem como toasts.',
-      topToastDemo:'Pronto. Toques importantes aparecem aqui.'
+      topToastDemo:'Pronto. Toques importantes aparecem aqui.',
+      // manual start
+      manualStartLabel:'Usar início manual',
+      manualStartIndex:'Pixel inicial (#)',
+      manualStartHelp:'Se ligado, começa a partir do pixel informado.',
+      jumpTo:'Início manual: pulando para #{n}'
     },
     en: {
       title: `FXBot - Pixels ${VERSION}`,
@@ -139,7 +144,12 @@
       status_run:'RUNNING',
       status_pause:'PAUSED',
       helpText:'Tip: set position, enable overlay to check alignment, then Start. Errors show as toasts.',
-      topToastDemo:'Ready. Important notices show here.'
+      topToastDemo:'Ready. Important notices show here.',
+      // manual start
+      manualStartLabel:'Use manual start',
+      manualStartIndex:'Start pixel (#)',
+      manualStartHelp:'If enabled, start from this pixel index.',
+      jumpTo:'Manual start: jumping to #{n}'
     }
   };
 
@@ -183,7 +193,9 @@
     ui:{ keydownHandler:null },
     // language
     lang: (localStorage.getItem(sessLangKey()) || 'auto'),
-    _resolvedLang: 'en'
+    _resolvedLang: 'en',
+    // manual start override
+    manualStart: { enabled:false, index:0 }
   };
 
   // resolve language now
@@ -199,21 +211,8 @@
   }
 
   // ===== Toast UI (dark neon, top-center) =====
-  function ensureToastHost(){
-    let host = document.getElementById('fxbot-top-toast');
-    if(!host){
-      host = document.createElement('div');
-      host.id = 'fxbot-top-toast';
-      Object.assign(host.style, {
-        position:'fixed', top:'24px', left:'50%', transform:'translateX(-50%)',
-        zIndex: 1000000, display:'flex', flexDirection:'column', gap:'10px', pointerEvents:'none'
-      });
-      document.body.appendChild(host);
-    }
-    return host;
-  }
-  // Criar container de toasts apenas uma vez
-function getToastContainer() {
+  // Create container once (stack vertically)
+  function getToastContainer() {
     let container = document.getElementById('fx-toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -225,14 +224,14 @@ function getToastContainer() {
         container.style.zIndex = '9999';
         container.style.display = 'flex';
         container.style.flexDirection = 'column';
-        container.style.gap = '8px'; // Espaçamento entre toasts
+        container.style.gap = '8px';
         container.style.alignItems = 'center';
         document.body.appendChild(container);
     }
     return container;
-}
+  }
 
-function showToast(message, type = 'info') {
+  function showToast(message, type = 'info', ms = 3000) {
     const toast = document.createElement('div');
     toast.textContent = message;
     toast.style.padding = '10px 20px';
@@ -240,8 +239,8 @@ function showToast(message, type = 'info') {
     toast.style.fontSize = '14px';
     toast.style.fontWeight = 'bold';
     toast.style.color = '#fff';
-    toast.style.background = 'rgba(20, 20, 20, 0.95)'; // Fundo sólido dark
-    toast.style.boxShadow = '0 0 12px rgba(0, 255, 170, 0.8)'; // Neon verde
+    toast.style.background = 'rgba(20, 20, 20, 0.95)'; // solid dark
+    toast.style.boxShadow = '0 0 12px rgba(0, 255, 170, 0.8)';
     toast.style.border = '1px solid rgba(0, 255, 170, 0.8)';
     toast.style.textAlign = 'center';
     toast.style.maxWidth = '80%';
@@ -249,22 +248,20 @@ function showToast(message, type = 'info') {
     toast.style.pointerEvents = 'none';
 
     if (type === 'error') {
-        toast.style.boxShadow = '0 0 12px rgba(255, 0, 0, 0.9)';
-        toast.style.border = '1px solid rgba(255, 0, 0, 0.9)';
-    } else if (type === 'warning') {
-        toast.style.boxShadow = '0 0 12px rgba(255, 255, 0, 0.9)';
-        toast.style.border = '1px solid rgba(255, 255, 0, 0.9)';
+      toast.style.boxShadow = '0 0 12px rgba(255, 0, 0, 0.9)';
+      toast.style.border = '1px solid rgba(255, 0, 0, 0.9)';
+    } else if (type === 'warning' || type === 'warn') {
+      toast.style.boxShadow = '0 0 12px rgba(255, 255, 0, 0.9)';
+      toast.style.border = '1px solid rgba(255, 255, 0, 0.9)';
     }
 
     const container = getToastContainer();
     container.appendChild(toast);
 
     setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
-
-
+      try{ toast.remove(); }catch{}
+    }, ms);
+  }
 
   // ===== Utils =====
   const U = {
@@ -316,6 +313,7 @@ function showToast(message, type = 'info') {
       queuePtr: state.queuePtr, painted: state.painted, totalTarget: state.totalTarget,
       cooldownMin: state.cooldownMin,
       lang: state.lang,
+      manualStart: {...state.manualStart},
       applied:{ set: Array.from(state.applied.set), pending: state.applied.pending.map(p=>({k:p.k,t:p.t, it:{x:p.it.x,y:p.it.y,colorId:p.it.colorId,rgb:p.it.rgb,canvas:p.it.canvas}})) },
       ts: Date.now()
     };
@@ -336,6 +334,7 @@ function showToast(message, type = 'info') {
       state.lang = obj.lang || state.lang;
       state._resolvedLang = state.lang === 'auto' ? detectBrowserLang() : (state.lang||'en');
       if(!(state._resolvedLang in LANGS)) state._resolvedLang = 'en';
+      if(obj.manualStart){ state.manualStart = {...state.manualStart, ...obj.manualStart}; }
       if(obj.applied){
         state.applied.set = new Set(obj.applied.set || []);
         state.applied.pending = Array.isArray(obj.applied.pending) ? obj.applied.pending.map(p=>({k:p.k, t:p.t, it:p.it})) : [];
@@ -411,7 +410,19 @@ function showToast(message, type = 'info') {
               <input id="reopen-depl" type="number" min="1000" max="60000" value="${FULL_DEPLETION_REOPEN_MS}">
             </label>
           </div>
+
+          <div class="grid3" style="margin-top:8px">
+            <label>${t('manualStartLabel')}
+              <input id="fx-manualstart-en" type="checkbox" ${state.manualStart?.enabled?'checked':''}>
+            </label>
+            <label>${t('manualStartIndex')}
+              <input id="fx-manualstart-idx" type="number" min="0" value="${state.manualStart?.index||0}" ${state.manualStart?.enabled?'':'disabled'}>
+            </label>
+            <div></div>
+          </div>
+
           <div class="statusline">${t('apiFreeHint')}</div>
+          <div class="statusline">${t('manualStartHelp')}</div>
         </fieldset>
 
         <fieldset class="box">
@@ -519,6 +530,20 @@ function showToast(message, type = 'info') {
     onInput('#cooldown-min', e=>{ state.cooldownMin = U.clamp(parseInt(e.target.value,10)||DEFAULT_COOLDOWN_MIN,1,60); saveSession('cooldown'); });
     onInput('#reopen-delay', e=>{ cfg.reopenDelay = U.clamp(parseInt(e.target.value,10)||REOPEN_DELAY_MS,500,60000); saveSession('cfg'); });
     onInput('#reopen-depl',  e=>{ cfg.reopenDepletion = U.clamp(parseInt(e.target.value,10)||FULL_DEPLETION_REOPEN_MS,1000,60000); saveSession('cfg'); });
+
+    // manual start binds
+    const msChk = g('#fx-manualstart-en');
+    const msIdx = g('#fx-manualstart-idx');
+    msChk.addEventListener('change', ()=>{
+      state.manualStart.enabled = !!msChk.checked;
+      if(msIdx) msIdx.disabled = !state.manualStart.enabled;
+      saveSession('manualStart');
+    });
+    msIdx.addEventListener('input', ()=>{
+      const v = parseInt(msIdx.value,10);
+      state.manualStart.index = Number.isFinite(v) ? Math.max(0, v) : 0;
+      saveSession('manualStart');
+    });
 
     // language selector
     const langEl = g('#fx-lang');
@@ -949,6 +974,15 @@ function showToast(message, type = 'info') {
     state.palette=extractPalette(); if(!state.palette.length){ setStatus(t('openPalette')); showToast(t('openPalette'), 'error'); return; }
     buildQueue(); if(!state.queue.length){ setStatus(t('nothingToPaint')); showToast(t('nothingToPaint'), 'warn'); return; }
 
+    // Manual start override (only if enabled and valid)
+    if(state.manualStart?.enabled){
+      const idx = Math.max(0, Math.min(state.queue.length - 1, parseInt(state.manualStart.index,10) || 0));
+      state.queuePtr = idx;
+      state.painted = idx;
+      updateProgress();
+      showToast(t('jumpTo', {n: idx}), 'info', 1800);
+    }
+
     state.running=true; state.paused=false; state.stopFlag=false; state.loopActive=true;
     updateButtons(); setTopStatus('run');
     startUITicker();
@@ -1110,6 +1144,9 @@ function showToast(message, type = 'info') {
     const cd = g('#cooldown-min'); if(cd) cd.value = String(state.cooldownMin);
     const rd = g('#reopen-delay'); if(rd) rd.value = String(cfg.reopenDelay);
     const rdd= g('#reopen-depl');  if(rdd) rdd.value= String(cfg.reopenDepletion);
+
+    const msChk = g('#fx-manualstart-en'); if(msChk) msChk.checked = !!state.manualStart.enabled;
+    const msIdx = g('#fx-manualstart-idx'); if(msIdx){ msIdx.value = String(state.manualStart.index||0); msIdx.disabled = !state.manualStart.enabled; }
   }
   function enableAfterImg(){ g('#fx-resize').disabled=false; g('#fx-pos').disabled=false; g('#fx-preview').disabled=false; g('#fx-start').disabled=false; }
 
