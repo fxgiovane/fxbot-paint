@@ -2,7 +2,7 @@
   'use strict';
 
   // ===== Config (API-FREE) =====
-  const VERSION = 'v7.1';
+  const VERSION = 'v7.2-live';
   const UI_TICK_MS = 500;                 // UI refresh tick
   const REOPEN_DELAY_MS = 2000;           // normal reopen delay (non-depletion commits)
   const FULL_DEPLETION_REOPEN_MS = 35000; // wait ~+1 cooldown before reopening palette after "tinta acabou"
@@ -78,6 +78,7 @@
       status_pause:'PAUSADO',
       helpText:'Dica: marque posição, ative overlay pra conferir e clique Iniciar. Erros aparecem como toasts.',
       topToastDemo:'Pronto. Toques importantes aparecem aqui.',
+      resizeHint:'Recomendado redimensionar para caber no mapa, mas é opcional — alterações são ao vivo.',
       // manual start
       manualStartLabel:'Usar início manual',
       manualStartIndex:'Pixel inicial (#)',
@@ -145,6 +146,7 @@
       status_pause:'PAUSED',
       helpText:'Tip: set position, enable overlay to check alignment, then Start. Errors show as toasts.',
       topToastDemo:'Ready. Important notices show here.',
+      resizeHint:'Recommended to resize to fit the map, but optional — changes are live.',
       // manual start
       manualStartLabel:'Use manual start',
       manualStartIndex:'Start pixel (#)',
@@ -198,7 +200,6 @@
     manualStart: { enabled:false, index:0 }
   };
 
-  // resolve language now
   state._resolvedLang = state.lang === 'auto' ? detectBrowserLang() : (state.lang||'en');
   if(!(state._resolvedLang in LANGS)) state._resolvedLang = 'en';
 
@@ -210,8 +211,7 @@
     return raw.replace(/\{(\w+)\}/g, (_,k)=> (params[k]!==undefined? String(params[k]): ''));
   }
 
-  // ===== Toast UI (dark neon, top-center) =====
-  // Create container once (stack vertically)
+  // ===== Toast UI =====
   function getToastContainer() {
     let container = document.getElementById('fx-toast-container');
     if (!container) {
@@ -341,6 +341,8 @@
         state.applied.pendingSet = new Set(state.applied.pending.map(p=>p.k));
       }
       markOverlayDirty(); applyStateToUI(); enableAfterImg(); setStatus(t('sessionLoaded')); updateProgress();
+      // Auto show overlay after restore for "always live" preview
+      if(state.imgData && state.pos){ ensureOverlay(); repaintOverlay(); placeOverlay(); setStatus(t('overlayOn')); }
       return true;
     }catch{ return false; }
   }
@@ -622,8 +624,17 @@
         state.applied.set.clear(); state.applied.pending.length=0; state.applied.pendingSet.clear();
         markOverlayDirty();
         setStatus(t('loadOK', {w:img.width, h:img.height, n: img.width*img.height}));
-        enableAfterImg(); state.totalTarget = 0; updateProgress(); saveSession('auto');
-      };
+        enableAfterImg();
+        state.totalTarget = 0; updateProgress(); saveSession('auto');
+        if(centerPosOnCanvas()){
+          ensureOverlay();
+          markOverlayDirty();
+          repaintOverlay();
+          placeOverlay();
+          showToast(t('resizeHint'), 'info', 4000);
+          setStatus(t('overlayOn'));
+        }
+        };
       img.onerror=()=>{ setStatus('Error'); showToast('Error loading image', 'error'); };
       img.src=fr.result;
     };
@@ -647,21 +658,75 @@
   }
 
   // ===== Position =====
-  function selectPosition(){
-    const canvas=getTargetCanvas(); if(!canvas){ setStatus(t('noCanvas')); showToast(t('noCanvas'), 'error'); return; }
-    setStatus(t('waitingClick'));
-    const rect=canvas.getBoundingClientRect();
-    const onClick=(ev)=>{
-      const x=Math.floor(ev.clientX-rect.left);
-      const y=Math.floor(ev.clientY-rect.top);
-      state.pos={x,y};
-      setStatus(t('posOK', {x, y}));
-      showToast(t('posOK', {x, y}), 'info', 2000);
-      canvas.removeEventListener('click',onClick);
-      refreshOverlay();
-      saveSession('pos');
+  function selectPosition() {
+  const rect = canvasRect();
+  if (!rect) {
+    setStatus(t('canvasNotFound'));
+    return;
+  }
+
+  setStatus(t('clickToSetPos'));
+
+  const uiRoot = state.uiRoot || document.getElementById('fx-ui');
+
+  let cancelKeyHandler = null;
+
+  const onClick = (e) => {
+    if (uiRoot && uiRoot.contains(e.target)) {
+      arm();
+      return;
+    }
+
+    const tile = Math.max(1, state.pixelSize | 0);
+    const relX = e.clientX - rect.left;
+    const relY = e.clientY - rect.top;
+    const gridX = Math.floor(relX / tile);
+    const gridY = Math.floor(relY / tile);
+    const imgW = Math.max(0, state.imgWidth  || 0);
+    const imgH = Math.max(0, state.imgHeight || 0);
+    const posX = gridX - Math.floor(imgW / 2);
+    const posY = gridY - Math.floor(imgH / 2);
+
+    state.pos = { x: posX, y: posY };
+
+    markOverlayDirty();
+    ensureOverlay();
+    repaintOverlay();
+    placeOverlay();
+    saveSession('auto');
+    setStatus(t('posSet', { x: state.pos.x, y: state.pos.y }));
+
+    if (cancelKeyHandler) {
+      document.removeEventListener('keydown', cancelKeyHandler, true);
+      cancelKeyHandler = null;
+    }
+  };
+
+  function arm() {
+    document.addEventListener('click', onClick, { once: true, capture: true });
+    cancelKeyHandler = (ev) => {
+      if (ev.key === 'Escape') {
+        document.removeEventListener('click', onClick, true);
+        document.removeEventListener('keydown', cancelKeyHandler, true);
+        cancelKeyHandler = null;
+        setStatus(t('posSelectCanceled'));
+      }
     };
-    canvas.addEventListener('click', onClick, {once:true});
+    document.addEventListener('keydown', cancelKeyHandler, true);
+  }
+  setTimeout(arm, 0);
+}
+
+
+  function centerPosOnCanvas(){
+    const rect=canvasRect(); if(!rect || !state.imgData) return false;
+    const tile=Math.max(1,state.pixelSize|0);
+    const w = state.imgWidth * tile;
+    const h = state.imgHeight * tile;
+    const x = Math.floor((rect.width  - w)/2);
+    const y = Math.floor((rect.height - h)/2);
+    state.pos = {x: Math.max(0,x), y: Math.max(0,y)};
+    return true;
   }
 
   // ===== Overlay =====
@@ -670,15 +735,38 @@
     const c=document.createElement('canvas'); c.id='fx-overlay';
     Object.assign(c.style,{position:'fixed',pointerEvents:'none',opacity:'0.65',zIndex:999998});
     document.body.appendChild(c); state.overlayCanvas=c;
+    // Force repaint next refresh to avoid "blank" overlay after toggling
+    state.overlayNeedsRepaint = true;
     window.addEventListener('scroll', placeOverlay, {passive:true});
     window.addEventListener('resize', placeOverlay);
     return c;
   }
-  function toggleOverlay(){
-    if(state.overlayCanvas){ try{ state.overlayCanvas.remove(); }catch{} state.overlayCanvas=null; setStatus(t('overlayOff')); return; }
-    if(!state.imgData||!state.pos){ setStatus(t('needImgPos')); showToast(t('mustPickPos'), 'warn'); return; }
-    ensureOverlay(); repaintOverlay(); placeOverlay(); setStatus(t('overlayOn'));
+  function toggleOverlay() {
+  if (state.overlayCanvas) {
+    try {
+      state.overlayCanvas.remove();
+    } catch (e) {
+      console.error(e);
+    }
+    state.overlayCanvas = null;
+    setStatus(t('overlayOff'));
+    return;
   }
+
+  if (!state.imgData || !state.pos) {
+    setStatus(t('needImgPos'));
+    showToast(t('mustPickPos'), 'warn');
+    return;
+  }
+
+  ensureOverlay();
+  // Make sure it paints immediately when re-enabled
+  markOverlayDirty();
+  repaintOverlay();
+  placeOverlay();
+  setStatus(t('overlayOn'));
+}
+
   function markOverlayDirty(){ state.overlayNeedsRepaint=true; }
   function refreshOverlay(){ if(!state.overlayCanvas) return; repaintOverlay(); placeOverlay(); }
   function repaintOverlay(){
