@@ -2,7 +2,7 @@
   'use strict';
 
   // ===== Config (API-FREE) =====
-  const VERSION = 'v7.2-live';
+  const VERSION = 'v7.2';
   const UI_TICK_MS = 500;                 // UI refresh tick
   const REOPEN_DELAY_MS = 2000;           // normal reopen delay (non-depletion commits)
   const FULL_DEPLETION_REOPEN_MS = 35000; // wait ~+1 cooldown before reopening palette after "tinta acabou"
