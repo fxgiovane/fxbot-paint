@@ -23,7 +23,6 @@
 - **API:** removida / indisponível (`401 Unauthorized`) — o bot funciona **100% via toast “Acabou a tinta”**  
 - **Fluxo:** pinta sem dó → toast → commit → aguarda cooldown → retoma sozinho  
 - **Execução rápida:** via **Bookmarklet** (`javascript:fetch(...)`) ou executando o `.js` no console  
-- **Plataforma:** navegador desktop (modo escuro recomendado)
 - **Atenção:** o site‑alvo recebe **atualizações diárias** — quebras e ajustes são **normais**
 
 ---
