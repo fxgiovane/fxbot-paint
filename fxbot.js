@@ -1,8 +1,8 @@
-
 (() => {
   'use strict';
 
   // ===== Config (API-FREE) =====
+  const VERSION = 'v7.0';
   const UI_TICK_MS = 500;                 // UI refresh tick
   const REOPEN_DELAY_MS = 2000;           // normal reopen delay (non-depletion commits)
   const FULL_DEPLETION_REOPEN_MS = 35000; // wait ~+1 cooldown before reopening palette after "tinta acabou"
@@ -15,23 +15,142 @@
     neon1:'#00F5FF', neon2:'#7C3BFF', good:'#39ff14', warn:'#ffb020', bad:'#ff3860'
   };
 
-  const TEXT = {
-    title:'FXBot - Pixels v6.9 (API-free)',
-    upload:'Upload', resize:'Redimensionar', selectPos:'Selecionar Posição', preview:'Preview (overlay)',
-    start:'Iniciar', pause:'Pausar', resume:'Retomar', stop:'Parar',
-    builtQueue:'Fila criada: {n} pixels',
-    needImgPos:'Carregue a imagem e defina a posição inicial.',
-    waitingClick:'Clique no CANTO SUPERIOR ESQUERDO do desenho, dentro do canvas.',
-    posOK:'Posicionado em X:{x} Y:{y} — alinhamento armado.',
-    loadOK:'Imagem: {w}×{h} • {n} px',
-    overlayOn:'Overlay ON — fantasma ativo.', overlayOff:'Overlay OFF — silêncio.',
-    done:'✅ Missão concluída! Pixels processados: {n}',
-    paused:'⏸️ Motores em espera.', resumed:'▶️ Motores a mil.', stopped:'⏹️ Operação abortada.',
-    committing:'⏳ Aplicando tinta…', committed:'✅ Tinta aplicada; sincronizando…',
-    sessionSaved:'💾 Sessão salva.', sessionLoaded:'📦 Sessão restaurada.',
-    toastHit:'⚠️ Detectado: "Acabou a tinta" — consolidando…',
-    coolingDown:'🧊 Resfriando por {min}min… restante {mmss}',
+  // ===== i18n =====
+  const LANGS = {
+    pt: {
+      title: `FXBot - Pixels ${VERSION}`,
+      menu_status: 'STATUS',
+      menu_lang: 'Idioma',
+      menu_help: 'Ajuda',
+      upload:'Upload',
+      resize:'Redimensionar',
+      selectPos:'Selecionar Posição',
+      preview:'Preview (overlay)',
+      start:'Iniciar',
+      pause:'Pausar',
+      resume:'Retomar',
+      stop:'Parar',
+      builtQueue:'Fila criada: {n} px',
+      needImgPos:'Envie a imagem e marque a posição no canvas.',
+      waitingClick:'Clique no CANTO SUPERIOR ESQUERDO da arte, dentro do canvas.',
+      posOK:'Alinhado em X:{x} Y:{y}.',
+      loadOK:'Imagem: {w}×{h} • {n} px',
+      overlayOn:'Overlay ON.',
+      overlayOff:'Overlay OFF.',
+      done:'✅ Concluído! Pixels: {n}',
+      paused:'⏸️ Pausado.',
+      resumed:'▶️ Retomando.',
+      stopped:'⏹️ Parado.',
+      committing:'⏳ Aplicando…',
+      committed:'✅ Aplicado.',
+      sessionSaved:'💾 Sessão salva.',
+      sessionLoaded:'📦 Sessão restaurada.',
+      toastHit:'⚠️ Sem tinta — consolidando…',
+      coolingDown:'🧊 Resfriando {min}min… faltam {mmss}',
+      noCanvas:'Canvas não encontrado. Abra a página do mapa.',
+      openPalette:'Abra a paleta de cores do site.',
+      nothingToPaint:'Nada a pintar (filtros atuais).',
+      started:'🚀 Pintando…',
+      mustPickPos:'Defina a posição antes de iniciar.',
+      mustUpload:'Envie a imagem antes de iniciar.',
+      cooldownLabel:'Cooldown após esgotar (min)',
+      reopenNormal:'Reabrir paleta após commit (ms)',
+      reopenDepl:'Reabrir após esgotar (ms)',
+      speed:'Velocidade & Precisão',
+      pixelSize:'Tamanho do pixel',
+      alpha:'Transparência <',
+      white:'Branco ≥',
+      skipWhite:'Pular branco',
+      skipAlpha:'Pular transparente',
+      order:'Ordem',
+      scan:'Scanline',
+      serp:'Serpentina',
+      center:'Centro→bordas',
+      bycolor:'Por cor',
+      processed:'Processados',
+      of:'/',
+      apiFreeHint:'Sem API: pinta até o toast "Acabou a tinta/Out of paint". Ao disparar, faz commit, espera +1 (~35s) e esfria.',
+      langAuto:'Auto (navegador)',
+      langPT:'PT-BR',
+      langEN:'EN',
+      status_idle:'IDLE',
+      status_run:'RODANDO',
+      status_pause:'PAUSADO',
+      helpText:'Dica: marque posição, ative overlay pra conferir e clique Iniciar. Erros aparecem como toasts.',
+      topToastDemo:'Pronto. Toques importantes aparecem aqui.'
+    },
+    en: {
+      title: `FXBot - Pixels ${VERSION}`,
+      menu_status: 'STATUS',
+      menu_lang: 'Language',
+      menu_help: 'Help',
+      upload:'Upload',
+      resize:'Resize',
+      selectPos:'Set Position',
+      preview:'Preview (overlay)',
+      start:'Start',
+      pause:'Pause',
+      resume:'Resume',
+      stop:'Stop',
+      builtQueue:'Queue built: {n} px',
+      needImgPos:'Upload an image and pick the canvas position.',
+      waitingClick:'Click the TOP-LEFT corner of your art inside the canvas.',
+      posOK:'Aligned at X:{x} Y:{y}.',
+      loadOK:'Image: {w}×{h} • {n} px',
+      overlayOn:'Overlay ON.',
+      overlayOff:'Overlay OFF.',
+      done:'✅ Done! Pixels: {n}',
+      paused:'⏸️ Paused.',
+      resumed:'▶️ Resuming.',
+      stopped:'⏹️ Stopped.',
+      committing:'⏳ Committing…',
+      committed:'✅ Committed.',
+      sessionSaved:'💾 Session saved.',
+      sessionLoaded:'📦 Session restored.',
+      toastHit:'⚠️ Out of paint — consolidating…',
+      coolingDown:'🧊 Cooling {min}min… left {mmss}',
+      noCanvas:'Canvas not found. Open the map page.',
+      openPalette:'Open the site color palette.',
+      nothingToPaint:'Nothing to paint with current filters.',
+      started:'🚀 Painting…',
+      mustPickPos:'Pick a position before starting.',
+      mustUpload:'Upload the image before starting.',
+      cooldownLabel:'Cooldown after depletion (min)',
+      reopenNormal:'Reopen palette after commit (ms)',
+      reopenDepl:'Reopen after depletion (ms)',
+      speed:'Speed & Accuracy',
+      pixelSize:'Pixel size',
+      alpha:'Transparency <',
+      white:'White ≥',
+      skipWhite:'Skip white',
+      skipAlpha:'Skip transparent',
+      order:'Order',
+      scan:'Scanline',
+      serp:'Serpentine',
+      center:'Center→edges',
+      bycolor:'By color',
+      processed:'Processed',
+      of:'/',
+      apiFreeHint:'API-free: paints until the "Acabou a tinta/Out of paint" toast. On hit, commit, wait +1 (~35s), cool, and resume.',
+      langAuto:'Auto (browser)',
+      langPT:'PT-BR',
+      langEN:'EN',
+      status_idle:'IDLE',
+      status_run:'RUNNING',
+      status_pause:'PAUSED',
+      helpText:'Tip: set position, enable overlay to check alignment, then Start. Errors show as toasts.',
+      topToastDemo:'Ready. Important notices show here.'
+    }
   };
+
+  const detectBrowserLang = () => {
+    try{
+      const langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']).map(s => String(s||'').toLowerCase());
+      return langs.some(l => l.startsWith('pt')) ? 'pt' : 'en';
+    }catch{ return 'en'; }
+  };
+
+  const sessLangKey = ()=>'fxbot-lang:'+location.host;
 
   // ===== State =====
   const state = {
@@ -61,8 +180,91 @@
     loopActive:false, lastPaintTs:0,
     uiTicker:null,
     // listeners
-    ui:{ keydownHandler:null }
+    ui:{ keydownHandler:null },
+    // language
+    lang: (localStorage.getItem(sessLangKey()) || 'auto'),
+    _resolvedLang: 'en'
   };
+
+  // resolve language now
+  state._resolvedLang = state.lang === 'auto' ? detectBrowserLang() : (state.lang||'en');
+  if(!(state._resolvedLang in LANGS)) state._resolvedLang = 'en';
+
+  // tiny template helper
+  function tKey(){ return LANGS[state._resolvedLang]; }
+  function t(id, params){
+    const raw = (tKey()[id] ?? id);
+    if(!params) return raw;
+    return raw.replace(/\{(\w+)\}/g, (_,k)=> (params[k]!==undefined? String(params[k]): ''));
+  }
+
+  // ===== Toast UI (dark neon, top-center) =====
+  function ensureToastHost(){
+    let host = document.getElementById('fxbot-top-toast');
+    if(!host){
+      host = document.createElement('div');
+      host.id = 'fxbot-top-toast';
+      Object.assign(host.style, {
+        position:'fixed', top:'24px', left:'50%', transform:'translateX(-50%)',
+        zIndex: 1000000, display:'flex', flexDirection:'column', gap:'10px', pointerEvents:'none'
+      });
+      document.body.appendChild(host);
+    }
+    return host;
+  }
+  // Criar container de toasts apenas uma vez
+function getToastContainer() {
+    let container = document.getElementById('fx-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'fx-toast-container';
+        container.style.position = 'fixed';
+        container.style.top = '20px';
+        container.style.left = '50%';
+        container.style.transform = 'translateX(-50%)';
+        container.style.zIndex = '9999';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '8px'; // Espaçamento entre toasts
+        container.style.alignItems = 'center';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '8px';
+    toast.style.fontSize = '14px';
+    toast.style.fontWeight = 'bold';
+    toast.style.color = '#fff';
+    toast.style.background = 'rgba(20, 20, 20, 0.95)'; // Fundo sólido dark
+    toast.style.boxShadow = '0 0 12px rgba(0, 255, 170, 0.8)'; // Neon verde
+    toast.style.border = '1px solid rgba(0, 255, 170, 0.8)';
+    toast.style.textAlign = 'center';
+    toast.style.maxWidth = '80%';
+    toast.style.wordWrap = 'break-word';
+    toast.style.pointerEvents = 'none';
+
+    if (type === 'error') {
+        toast.style.boxShadow = '0 0 12px rgba(255, 0, 0, 0.9)';
+        toast.style.border = '1px solid rgba(255, 0, 0, 0.9)';
+    } else if (type === 'warning') {
+        toast.style.boxShadow = '0 0 12px rgba(255, 255, 0, 0.9)';
+        toast.style.border = '1px solid rgba(255, 255, 0, 0.9)';
+    }
+
+    const container = getToastContainer();
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+
 
   // ===== Utils =====
   const U = {
@@ -71,7 +273,7 @@
     sleep:ms=>new Promise(r=>setTimeout(r,ms)),
     clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),
     colorDist(a,b){ const dr=a[0]-b[0],dg=a[1]-b[1],db=a[2]-b[2]; return Math.sqrt(dr*dr+dg*dg+db*db); },
-    log(...args){ console.log('%c[FXBot v6.9]', 'color:'+THEME.neon1, ...args); },
+    log(...args){ console.log('%c[FXBot '+VERSION+']', 'color:'+THEME.neon1, ...args); },
     mmss(ms){ ms=Math.max(0,ms|0); const s=Math.ceil(ms/1000); const m=(s/60|0); return `${m}:${String(s%60).padStart(2,'0')}`; },
     toDataURL(imgData){ const c=document.createElement('canvas'); c.width=imgData.width; c.height=imgData.height; c.getContext('2d').putImageData(imgData,0,0); return c.toDataURL('image/png'); },
     async fromDataURL(dataURL){
@@ -101,7 +303,7 @@
   function selectColor(id){ const el=document.getElementById(`color-${id}`); if(el){ el.click(); return true; } return false; }
 
   // ===== Session =====
-  const sessKey = ()=>'fxbot-pixels-v69:'+location.host;
+  const sessKey = ()=>'fxbot-pixels-'+VERSION+':'+location.host;
   function snapshot(){
     return {
       img: state.imgData ? U.toDataURL(state.imgData) : null,
@@ -113,6 +315,7 @@
       turbo: state.turbo, cps: state.cps, colorSettleMs: state.colorSettleMs,
       queuePtr: state.queuePtr, painted: state.painted, totalTarget: state.totalTarget,
       cooldownMin: state.cooldownMin,
+      lang: state.lang,
       applied:{ set: Array.from(state.applied.set), pending: state.applied.pending.map(p=>({k:p.k,t:p.t, it:{x:p.it.x,y:p.it.y,colorId:p.it.colorId,rgb:p.it.rgb,canvas:p.it.canvas}})) },
       ts: Date.now()
     };
@@ -130,111 +333,138 @@
       state.turbo= !!obj.turbo; state.cps= obj.cps ?? 80; state.colorSettleMs= obj.colorSettleMs ?? 0;
       state.queuePtr= obj.queuePtr ?? 0; state.painted= obj.painted ?? 0; state.totalTarget = obj.totalTarget ?? 0;
       state.cooldownMin = obj.cooldownMin ?? DEFAULT_COOLDOWN_MIN;
+      state.lang = obj.lang || state.lang;
+      state._resolvedLang = state.lang === 'auto' ? detectBrowserLang() : (state.lang||'en');
+      if(!(state._resolvedLang in LANGS)) state._resolvedLang = 'en';
       if(obj.applied){
         state.applied.set = new Set(obj.applied.set || []);
         state.applied.pending = Array.isArray(obj.applied.pending) ? obj.applied.pending.map(p=>({k:p.k, t:p.t, it:p.it})) : [];
         state.applied.pendingSet = new Set(state.applied.pending.map(p=>p.k));
       }
-      markOverlayDirty(); applyStateToUI(); enableAfterImg(); setStatus(TEXT.sessionLoaded); updateProgress();
+      markOverlayDirty(); applyStateToUI(); enableAfterImg(); setStatus(t('sessionLoaded')); updateProgress();
       return true;
     }catch{ return false; }
   }
-  function saveSession(reason=''){ try{ localStorage.setItem(sessKey(), JSON.stringify(snapshot())); if(reason!=='silent') setStatus(TEXT.sessionSaved+(reason?` (${reason})`:'')); }catch{} }
+  function saveSession(reason=''){ try{ localStorage.setItem(sessKey(), JSON.stringify(snapshot())); if(reason!=='silent') setStatus(t('sessionSaved')); }catch{} }
   function hasSession(){ try{ return !!localStorage.getItem(sessKey()); }catch{return false;} }
   async function loadSession(){ try{ const s=localStorage.getItem(sessKey()); if(!s) return false; return await restore(JSON.parse(s)); }catch{ return false; } }
 
   // ===== UI =====
   function buildUI(){
-    const old=document.getElementById('fxbot-ui'); if(old) old.remove();
+    const old=document.getElementById('fxbot-ui'); if(old){
+      // remove hotkeys before rebuild
+      if(state.ui.keydownHandler){ window.removeEventListener('keydown', state.ui.keydownHandler, true); state.ui.keydownHandler=null; }
+      old.remove();
+    }
     const root=document.createElement('div'); root.id='fxbot-ui';
-    Object.assign(root.style, {position:'fixed', bottom:'20px', right:'20px', zIndex:999999, width:'min(92vw,520px)', maxHeight:'80vh', overflow:'auto',
+    Object.assign(root.style, {position:'fixed', bottom:'20px', right:'20px', zIndex:999999, width:'min(92vw,560px)', maxHeight:'80vh', overflow:'auto',
       background:`linear-gradient(135deg, rgba(124,59,255,.12), rgba(0,245,255,.08))`, boxShadow:'0 20px 50px rgba(0,0,0,.55)', borderRadius:'16px', padding:'1px'});
     const inner=document.createElement('div');
     Object.assign(inner.style, {background:THEME.panel, color:THEME.text, border:`1px solid ${THEME.border}`, borderRadius:'16px', fontFamily:'JetBrains Mono, SFMono-Regular, Menlo, monospace'});
+
+    // header with status + lang
+    const statusBadge = `<span id="fx-top-status" style="padding:4px 8px;border:1px solid ${THEME.neon1};border-radius:999px;color:${THEME.neon1};font-size:11px;">${t('status_idle')}</span>`;
+    const langSel = `
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:${THEME.subtle}">
+        ${t('menu_lang')}
+        <select id="fx-lang" style="background:${THEME.bg};border:1px solid ${THEME.border};color:${THEME.text};border-radius:8px;padding:6px;outline:none">
+          <option value="auto"${state.lang==='auto'?' selected':''}>${t('langAuto')}</option>
+          <option value="pt"${state.lang==='pt'?' selected':''}>${t('langPT')}</option>
+          <option value="en"${state.lang==='en'?' selected':''}>${t('langEN')}</option>
+        </select>
+      </label>`;
+
     inner.innerHTML = `
       <div id="fx-drag-handle" style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px 14px;border-bottom:1px solid ${THEME.border}; background:rgba(10,10,14,.6); border-top-left-radius:16px;border-top-right-radius:16px;cursor:move">
-        <div style="font-weight:700; letter-spacing:.3px; color:${THEME.neon1}; text-shadow:0 0 8px ${THEME.neon1}">${TEXT.title}</div>
-        <div style="display:flex;gap:8px">
-          <button id="fx-save" class="fx-btn ghost">Salvar</button>
-          <button id="fx-restore" class="fx-btn ghost" ${hasSession()?'':'disabled'}>Restaurar</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-weight:700; letter-spacing:.3px; color:${THEME.neon1}; text-shadow:0 0 8px ${THEME.neon1}">${t('title')}</div>
+          ${statusBadge}
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:${THEME.subtle}">${t('menu_status')}</span>
+          ${langSel}
+          <button id="fx-save" class="fx-btn ghost">Save</button>
+          <button id="fx-restore" class="fx-btn ghost" ${hasSession()?'':'disabled'}>Restore</button>
           <button id="fx-min" class="fx-btn ghost">─</button>
         </div>
       </div>
       <div id="fx-body" style="padding:14px;display:flex;flex-direction:column;gap:12px">
-        <div id="fx-status" style="font-size:12px;color:${THEME.subtle};opacity:.9">${TEXT.needImgPos}</div>
+        <div id="fx-status" style="font-size:12px;color:${THEME.subtle};opacity:.9">${t('needImgPos')}</div>
 
         <div class="grid2">
-          <button id="fx-upload" class="fx-btn primary">⭳ ${TEXT.upload}</button>
-          <button id="fx-resize" class="fx-btn" disabled>↔ ${TEXT.resize}</button>
-          <button id="fx-pos" class="fx-btn" disabled>✚ ${TEXT.selectPos}</button>
-          <button id="fx-preview" class="fx-btn" disabled>☯ ${TEXT.preview}</button>
+          <button id="fx-upload" class="fx-btn primary">⭳ ${t('upload')}</button>
+          <button id="fx-resize" class="fx-btn" disabled>↔ ${t('resize')}</button>
+          <button id="fx-pos" class="fx-btn" disabled>✚ ${t('selectPos')}</button>
+          <button id="fx-preview" class="fx-btn" disabled>☯ ${t('preview')}</button>
         </div>
 
         <fieldset class="box">
-          <legend>🧪 Tinta & Fluxo (sem API)</legend>
+          <legend>🧪 Fluxo (without API)</legend>
           <div class="grid3">
-            <label>Cooldown após esgotar (min)
-              <input id="cooldown-min" type="number" min="1" max="60" value="${DEFAULT_COOLDOWN_MIN}">
+            <label>${t('cooldownLabel')}
+              <input id="cooldown-min" type="number" min="1" max="60" value="${state.cooldownMin}">
             </label>
-            <label>Reabrir paleta após commit (ms)
+            <label>${t('reopenNormal')}
               <input id="reopen-delay" type="number" min="500" max="60000" value="${REOPEN_DELAY_MS}">
             </label>
-            <label>Reopen (depleção) (ms)
+            <label>${t('reopenDepl')}
               <input id="reopen-depl" type="number" min="1000" max="60000" value="${FULL_DEPLETION_REOPEN_MS}">
             </label>
           </div>
-          <div class="statusline">Sem API: o bot pinta até o toast "Acabou a tinta". Ao disparar, faz commit, aguarda +1 (~35s) para reabrir a paleta e esfria pelo tempo configurado.</div>
+          <div class="statusline">${t('apiFreeHint')}</div>
         </fieldset>
 
         <fieldset class="box">
-          <legend>⚙️ Velocidade & Precisão</legend>
+          <legend>⚙️ ${t('speed')}</legend>
           <div class="grid3">
             <label>Turbo
-              <input id="fx-turbo" type="checkbox" checked>
+              <input id="fx-turbo" type="checkbox" ${state.turbo?'checked':''}>
             </label>
             <label>CPS
-              <input id="fx-cps" type="number" min="1" max="1000" value="80">
+              <input id="fx-cps" type="number" min="1" max="1000" value="${state.cps}">
             </label>
-            <label>Delay troca cor (ms)
-              <input id="fx-colorwait" type="number" min="0" max="200" value="0">
-            </label>
-          </div>
-          <div class="grid3">
-            <label>Tamanho do pixel
-              <input id="fx-psize" type="number" min="1" value="1">
-            </label>
-            <label>Transparência &lt;
-              <input id="fx-alpha" type="number" min="0" max="255" value="100">
-            </label>
-            <label>Branco ≥
-              <input id="fx-white" type="number" min="0" max="255" value="250">
+            <label>Delay cor (ms)
+              <input id="fx-colorwait" type="number" min="0" max="200" value="${state.colorSettleMs}">
             </label>
           </div>
           <div class="grid3">
-            <label>Skip branco <input id="fx-skipw" type="checkbox" checked></label>
-            <label>Skip transparente <input id="fx-skipa" type="checkbox" checked></label>
-            <label>Ordem
+            <label>${t('pixelSize')}
+              <input id="fx-psize" type="number" min="1" value="${state.pixelSize}">
+            </label>
+            <label>${t('alpha')}
+              <input id="fx-alpha" type="number" min="0" max="255" value="${state.alphaThr}">
+            </label>
+            <label>${t('white')}
+              <input id="fx-white" type="number" min="0" max="255" value="${state.whiteThr}">
+            </label>
+          </div>
+          <div class="grid3">
+            <label>${t('skipWhite')} <input id="fx-skipw" type="checkbox" ${state.skipWhite?'checked':''}></label>
+            <label>${t('skipAlpha')} <input id="fx-skipa" type="checkbox" ${state.skipTransparent?'checked':''}></label>
+            <label>${t('order')}
               <select id="fx-order">
-                <option value="scanline">Scanline</option>
-                <option value="serpentine">Serpentina</option>
-                <option value="center">Centro→bordas</option>
-                <option value="bycolor">Por cor</option>
+                <option value="scanline"${state.order==='scanline'?' selected':''}>${t('scan')}</option>
+                <option value="serpentine"${state.order==='serpentine'?' selected':''}>${t('serp')}</option>
+                <option value="center"${state.order==='center'?' selected':''}>${t('center')}</option>
+                <option value="bycolor"${state.order==='bycolor'?' selected':''}>${t('bycolor')}</option>
               </select>
             </label>
           </div>
         </fieldset>
 
         <div class="grid3">
-          <button id="fx-start" class="fx-btn success" disabled>${TEXT.start}</button>
-          <button id="fx-pause" class="fx-btn warn" style="display:none">${TEXT.pause}</button>
-          <button id="fx-resume" class="fx-btn primary" style="display:none">${TEXT.resume}</button>
-          <button id="fx-stop" class="fx-btn danger" style="display:none">${TEXT.stop}</button>
+          <button id="fx-start" class="fx-btn success" disabled>${t('start')}</button>
+          <button id="fx-pause" class="fx-btn warn" style="display:none">${t('pause')}</button>
+          <button id="fx-resume" class="fx-btn primary" style="display:none">${t('resume')}</button>
+          <button id="fx-stop" class="fx-btn danger" style="display:none">${t('stop')}</button>
         </div>
 
         <div id="fx-progress" class="box soft">
-          <div>Processados: <span id="fx-qdone">0</span>/<span id="fx-qtotal">0</span></div>
+          <div>${t('processed')}: <span id="fx-qdone">0</span>${t('of')}<span id="fx-qtotal">0</span></div>
           <div id="fx-action">—</div>
         </div>
+
+        <div class="statusline">${t('helpText')}</div>
       </div>
       <input id="fx-file" type="file" accept="image/png,image/jpeg" style="display:none">
     `;
@@ -261,8 +491,8 @@
 
     // binds
     g('#fx-min').addEventListener('click',()=>{ const b=g('#fx-body'); b.style.display=b.style.display==='none'?'flex':'none'; });
-    g('#fx-save').addEventListener('click', ()=>saveSession());
-    g('#fx-restore').addEventListener('click', async ()=>{ const ok=await loadSession(); if(ok){ enableAfterImg(); refreshOverlay(); updateButtons(); updateProgress(); }});
+    g('#fx-save').addEventListener('click', ()=>{ saveSession('manual'); showToast(t('sessionSaved')); });
+    g('#fx-restore').addEventListener('click', async ()=>{ const ok=await loadSession(); if(ok){ enableAfterImg(); refreshOverlay(); updateButtons(); updateProgress(); showToast(t('sessionLoaded')); }});
 
     g('#fx-upload').addEventListener('click',()=>g('#fx-file').click());
     g('#fx-file').addEventListener('change', onFile);
@@ -290,12 +520,23 @@
     onInput('#reopen-delay', e=>{ cfg.reopenDelay = U.clamp(parseInt(e.target.value,10)||REOPEN_DELAY_MS,500,60000); saveSession('cfg'); });
     onInput('#reopen-depl',  e=>{ cfg.reopenDepletion = U.clamp(parseInt(e.target.value,10)||FULL_DEPLETION_REOPEN_MS,1000,60000); saveSession('cfg'); });
 
+    // language selector
+    const langEl = g('#fx-lang');
+    langEl.addEventListener('change', ()=>{
+      state.lang = langEl.value || 'auto';
+      localStorage.setItem(sessLangKey(), state.lang);
+      state._resolvedLang = state.lang === 'auto' ? detectBrowserLang() : state.lang;
+      if(!(state._resolvedLang in LANGS)) state._resolvedLang = 'en';
+      buildUI(); // rebuild with new language
+      showToast(t('topToastDemo'));
+    });
+
     // hotkeys (store and remove later)
     if(state.ui.keydownHandler){ window.removeEventListener('keydown', state.ui.keydownHandler, true); }
     state.ui.keydownHandler = (ev)=>{
       if(ev.key.toLowerCase()==='p'){ state.running && !state.paused ? pausePainting() : resumePainting(); }
       else if(ev.key.toLowerCase()==='s'){ stopPainting(); }
-      else if(ev.ctrlKey && ev.key.toLowerCase()==='s'){ ev.preventDefault(); saveSession('manual'); }
+      else if(ev.ctrlKey && ev.key.toLowerCase()==='s'){ ev.preventDefault(); saveSession('manual'); showToast(t('sessionSaved')); }
     };
     window.addEventListener('keydown', state.ui.keydownHandler, true);
 
@@ -321,7 +562,16 @@
   const g = sel => document.querySelector(sel);
   const onInput = (sel, fn) => g(sel).addEventListener('input', fn);
 
-  function setStatus(msg){ const el=g('#fx-status'); if(el) el.innerHTML=msg; U.log(msg); }
+  function setStatus(msg){
+    const el=g('#fx-status'); if(el) el.innerHTML=msg;
+    U.log(msg);
+  }
+  function setTopStatus(mode){
+    const el=g('#fx-top-status'); if(!el) return;
+    if(mode==='run'){ el.textContent = t('status_run'); el.style.color = THEME.good; el.style.borderColor = THEME.good; }
+    else if(mode==='pause'){ el.textContent = t('status_pause'); el.style.color = THEME.warn; el.style.borderColor = THEME.warn; }
+    else { el.textContent = t('status_idle'); el.style.color = THEME.neon1; el.style.borderColor = THEME.neon1; }
+  }
   function updateProgress(){
     const qd=g('#fx-qdone'); const qt=g('#fx-qtotal');
     const done = state.applied.set.size;
@@ -334,7 +584,7 @@
   // ===== Upload / Resize =====
   async function onFile(e){
     const file=e.target.files&&e.target.files[0]; if(!file) return;
-    setStatus('Carregando imagem…');
+    setStatus(t('started'));
     const fr=new FileReader();
     fr.onload=()=>{
       const img=new Image();
@@ -346,17 +596,18 @@
         state.queuePtr=0; state.painted=0;
         state.applied.set.clear(); state.applied.pending.length=0; state.applied.pendingSet.clear();
         markOverlayDirty();
-        setStatus(`${TEXT.loadOK.replace('{w}',img.width).replace('{h}',img.height).replace('{n}', img.width*img.height)}`);
+        setStatus(t('loadOK', {w:img.width, h:img.height, n: img.width*img.height}));
         enableAfterImg(); state.totalTarget = 0; updateProgress(); saveSession('auto');
       };
-      img.onerror=()=>setStatus('Erro ao carregar imagem.'); img.src=fr.result;
+      img.onerror=()=>{ setStatus('Error'); showToast('Error loading image', 'error'); };
+      img.src=fr.result;
     };
     fr.readAsDataURL(file);
   }
   function resizeImage(){
-    if(!state.imgData) return;
-    const w=parseInt(prompt('Nova largura (px):',state.imgWidth),10);
-    const h=parseInt(prompt('Nova altura (px):',state.imgHeight),10);
+    if(!state.imgData){ showToast(t('mustUpload'), 'warn'); return; }
+    const w=parseInt(prompt('W (px):',state.imgWidth),10);
+    const h=parseInt(prompt('H (px):',state.imgHeight),10);
     if(!Number.isFinite(w)||!Number.isFinite(h)||w<=0||h<=0) return;
     const c=document.createElement('canvas'); c.width=w; c.height=h;
     const ctx=c.getContext('2d'); const tmp=document.createElement('canvas'); tmp.width=state.imgWidth; tmp.height=state.imgHeight;
@@ -366,20 +617,21 @@
     state.queuePtr=0; state.painted=0;
     state.applied.set.clear(); state.applied.pending.length=0; state.applied.pendingSet.clear();
     markOverlayDirty(); refreshOverlay();
-    setStatus(TEXT.loadOK.replace('{w}',w).replace('{h}',h).replace('{n}', w*h));
+    setStatus(t('loadOK', {w, h, n: w*h}));
     saveSession('resize');
   }
 
   // ===== Position =====
   function selectPosition(){
-    const canvas=getTargetCanvas(); if(!canvas){ setStatus('Canvas não encontrado.'); return; }
-    setStatus(TEXT.waitingClick);
+    const canvas=getTargetCanvas(); if(!canvas){ setStatus(t('noCanvas')); showToast(t('noCanvas'), 'error'); return; }
+    setStatus(t('waitingClick'));
     const rect=canvas.getBoundingClientRect();
     const onClick=(ev)=>{
       const x=Math.floor(ev.clientX-rect.left);
       const y=Math.floor(ev.clientY-rect.top);
       state.pos={x,y};
-      setStatus(TEXT.posOK.replace('{x}',x).replace('{y}',y));
+      setStatus(t('posOK', {x, y}));
+      showToast(t('posOK', {x, y}), 'info', 2000);
       canvas.removeEventListener('click',onClick);
       refreshOverlay();
       saveSession('pos');
@@ -398,9 +650,9 @@
     return c;
   }
   function toggleOverlay(){
-    if(state.overlayCanvas){ try{ state.overlayCanvas.remove(); }catch{} state.overlayCanvas=null; setStatus(TEXT.overlayOff); return; }
-    if(!state.imgData||!state.pos){ setStatus(TEXT.needImgPos); return; }
-    ensureOverlay(); repaintOverlay(); placeOverlay(); setStatus(TEXT.overlayOn);
+    if(state.overlayCanvas){ try{ state.overlayCanvas.remove(); }catch{} state.overlayCanvas=null; setStatus(t('overlayOff')); return; }
+    if(!state.imgData||!state.pos){ setStatus(t('needImgPos')); showToast(t('mustPickPos'), 'warn'); return; }
+    ensureOverlay(); repaintOverlay(); placeOverlay(); setStatus(t('overlayOn'));
   }
   function markOverlayDirty(){ state.overlayNeedsRepaint=true; }
   function refreshOverlay(){ if(!state.overlayCanvas) return; repaintOverlay(); placeOverlay(); }
@@ -449,6 +701,7 @@
   // ===== Queue =====
   function buildQueue(){
     state.palette=extractPalette(); state.colorCache.clear();
+    if(!state.palette.length){ showToast(t('openPalette'), 'warn'); }
     state.queue=[]; state.painted=state.queuePtr||0;
     const w=state.imgWidth, h=state.imgHeight, data=state.imgData?.data; if(!data) return;
     const wantByColor=state.order==='bycolor'; const buckets=new Map();
@@ -483,7 +736,7 @@
     } else if (wantByColor){
       for(const id of Array.from(buckets.keys())) state.queue.push(...buckets.get(id));
     }
-    setStatus(TEXT.builtQueue.replace('{n}', state.queue.length)); state.totalTarget = state.applied.set.size + state.queue.length; updateProgress();
+    setStatus(t('builtQueue', {n: state.queue.length})); state.totalTarget = state.applied.set.size + state.queue.length; updateProgress();
   }
   function imageToCanvas(ix,iy){
     const rect=canvasRect(); if(!rect||!state.pos) return null;
@@ -566,14 +819,14 @@
   }
   async function clickCommitOnly(){
     const btn = getCommitButton(); if(!btn) return false;
-    state.committing = true; setAction(TEXT.committing);
+    state.committing = true; setAction(t('committing'));
     btn.click();
     state.committing = false; return true;
   }
   async function reopenPaletteAfter(ms){
     await U.sleep(ms);
     const btn2 = getCommitButton(); if(btn2) btn2.click();
-    setAction(TEXT.committed); return true;
+    setAction(t('committed')); return true;
   }
   async function commitAndSync(reopenDelayMs){
     await clickCommitOnly();
@@ -597,7 +850,7 @@
       if(state.toast.observer) return;
       const root = getToastRoot();
       state.toast.root = root;
-      const re = /Acabou a tinta/i;
+      const re = /Acabou a tinta|Out of paint/i;
       const obs = new MutationObserver((muts)=>{
         if(state.toast.handling) return;
         const now = U.now();
@@ -615,7 +868,8 @@
               state.toast.seen = true;
               state.toast.seenAt = U.now();
               state.toast.lastSeenAt = state.toast.seenAt;
-              setAction(TEXT.toastHit);
+              setAction(t('toastHit'));
+              showToast(t('toastHit'), 'warn', 2500);
               handleInkDepletedToast();
               return;
             }
@@ -625,7 +879,7 @@
       obs.observe(root, {subtree:true, childList:true}); // light
       state.toast.observer = obs;
     }catch(e){
-      U.log('Toast observer falhou:', e);
+      U.log('Toast observer failed:', e);
     }
   }
   function stopToastObserver(){
@@ -640,7 +894,7 @@
     state.toast.handling = true;
     try{
       // pause loop
-      state.paused = true; updateButtons();
+      state.paused = true; updateButtons(); setTopStatus('pause');
 
       // rollback pendings created after toast
       const cutoff = state.toast.seenAt;
@@ -665,7 +919,7 @@
       const total = Math.max(1, state.cooldownMin|0) * 60 * 1000;
       let remain = total;
       while(remain > 0 && state.running && !state.stopFlag){
-        setAction(TEXT.coolingDown.replace('{min}', String(state.cooldownMin)).replace('{mmss}', U.mmss(remain)));
+        setAction(t('coolingDown', {min:String(state.cooldownMin), mmss: U.mmss(remain)}));
         const step = Math.min(1000, remain);
         await U.sleep(step);
         remain -= step;
@@ -673,7 +927,8 @@
 
       if(!state.running || state.stopFlag) return;
       state.toast.seen = false;
-      state.paused = false; updateButtons();
+      state.paused = false; updateButtons(); setTopStatus('run');
+      showToast(t('resumed') || t('resumed'), 'info', 1800);
     }catch(e){
       U.log('handleInkDepletedToast error:', e);
     }finally{
@@ -682,20 +937,23 @@
   }
 
   // ===== Tickers =====
-  function startUITicker(){ stopUITicker(); state.uiTicker = setInterval(()=>{ /* lightweight: could add UI pulse if needed */ }, UI_TICK_MS); }
+  function startUITicker(){ stopUITicker(); state.uiTicker = setInterval(()=>{ /* UI pulse if needed */ }, UI_TICK_MS); }
   function stopUITicker(){ if(state.uiTicker){ clearInterval(state.uiTicker); state.uiTicker=null; } }
 
   // ===== Runner =====
   async function startPainting(){
-    if(state.loopActive){ setStatus('Já está rodando.'); return; }
-    if(!state.imgData||!state.pos){ setStatus(TEXT.needImgPos); return; }
-    state.palette=extractPalette(); if(!state.palette.length){ setStatus('Abra a paleta de cores do site.'); return; }
-    buildQueue(); if(!state.queue.length){ setStatus('Nada a pintar com os filtros.'); return; }
+    if(state.loopActive){ showToast('Already running', 'warn'); return; }
+    if(!state.imgData){ setStatus(t('mustUpload')); showToast(t('mustUpload'), 'error'); return; }
+    if(!state.pos){ setStatus(t('mustPickPos')); showToast(t('mustPickPos'), 'error'); return; }
+
+    state.palette=extractPalette(); if(!state.palette.length){ setStatus(t('openPalette')); showToast(t('openPalette'), 'error'); return; }
+    buildQueue(); if(!state.queue.length){ setStatus(t('nothingToPaint')); showToast(t('nothingToPaint'), 'warn'); return; }
 
     state.running=true; state.paused=false; state.stopFlag=false; state.loopActive=true;
-    updateButtons();
+    updateButtons(); setTopStatus('run');
     startUITicker();
     startToastObserver();
+    showToast(t('started'), 'info', 1600);
 
     if(state.turbo) mainLoopTurbo(); else mainLoopClassic();
   }
@@ -713,7 +971,7 @@
 
       const it=state.queue[state.queuePtr];
       if(isAppliedXY(it.canvas.x, it.canvas.y)){ state.queuePtr++; updateProgress(); continue; }
-      setAction(`Cor ${it.colorId} | Pixel ${state.queuePtr+1}/${state.queue.length}`);
+      setAction(`Cor ${it.colorId} | ${state.queuePtr+1}/${state.queue.length}`);
 
       const now = U.now(); const elapsed = now - state.lastPaintTs;
       const need = baseInterval(); if(elapsed < need) await U.sleep(need - elapsed);
@@ -739,7 +997,7 @@
 
       const it=state.queue[state.queuePtr];
       if(isAppliedXY(it.canvas.x, it.canvas.y)){ state.queuePtr++; updateProgress(); continue; }
-      setAction(`⚡ TURBO • cor ${it.colorId} • ${state.queuePtr+1}/${state.queue.length}`);
+      setAction(`⚡ cor ${it.colorId} • ${state.queuePtr+1}/${state.queue.length}`);
 
       const now = U.now(); const elapsed = now - state.lastPaintTs;
       const need = baseInterval(); if(elapsed < need) await U.sleep(need - elapsed);
@@ -763,16 +1021,19 @@
       g('#fx-pause').style.display='none';
       g('#fx-resume').style.display='none';
       g('#fx-stop').style.display='none';
+      setTopStatus('idle');
     }else if(state.paused){
       g('#fx-start').style.display='none';
       g('#fx-pause').style.display='none';
       g('#fx-resume').style.display='inline-block';
       g('#fx-stop').style.display='inline-block';
+      setTopStatus('pause');
     }else{
       g('#fx-start').style.display='none';
       g('#fx-pause').style.display='inline-block';
       g('#fx-resume').style.display='none';
       g('#fx-stop').style.display='inline-block';
+      setTopStatus('run');
     }
   }
 
@@ -782,22 +1043,21 @@
     stopToastObserver();
     updateButtons();
     saveSession('finish');
-    setStatus(state.stopFlag?TEXT.stopped:TEXT.done.replace('{n}', state.painted));
+    setStatus(state.stopFlag?t('stopped'):t('done', {n: state.painted}));
   }
 
   function pausePainting(){
     if(!state.running||state.paused) return;
     state.paused=true;
-    stopToastObserver(); // pausar observer alivia DOM churn
+    stopToastObserver();
     updateButtons();
-    saveSession('pause'); setStatus(TEXT.paused);
+    saveSession('pause'); setStatus(t('paused')); showToast(t('paused'), 'info', 1500);
   }
   function resumePainting(){
     if(!state.running||!state.paused) return;
     state.paused=false;
     startToastObserver();
-    updateButtons();
-    setStatus(TEXT.resumed);
+    updateButtons(); setStatus(t('resumed')); showToast(t('resumed'), 'info', 1500);
   }
 
   function stopPainting(){
@@ -833,7 +1093,7 @@
     try{ localStorage.removeItem(sessKey()); }catch{}
     updateProgress();
     updateButtons();
-    setStatus(TEXT.stopped);
+    setStatus(t('stopped')); showToast(t('stopped'), 'warn', 1600);
   }
 
   // ===== Helpers UI =====
@@ -888,16 +1148,17 @@
   function init(){
     addGlobalStyles();
     buildUI();
-    setStatus('Carregue sua imagem, alinhe o fantasma e dispare — ou <b>Restaurar</b> uma sessão.');
+    setStatus(t('needImgPos'));
     startUITicker();
     if(hasSession()){ loadSession().then(()=>{ updateButtons(); updateProgress(); }); }
+    showToast(t('topToastDemo'), 'info', 2200);
   }
   function addGlobalStyles(){
     const s=document.createElement('style');
     s.textContent=`
       #fxbot-ui .statusline{font-size:12px;color:${THEME.subtle};margin-top:6px}
       #fxbot-ui label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:${THEME.subtle}}
-      @media (max-width: 520px){
+      @media (max-width: 560px){
         #fxbot-ui{width:94vw; bottom:10px; right:10px}
         #fxbot-ui .grid3{grid-template-columns:1fr 1fr}
       }
