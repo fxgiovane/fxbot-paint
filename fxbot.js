@@ -928,7 +928,7 @@
   // ===== Commit helpers =====
   function getCommitButton(){
     const btns = Array.from(document.querySelectorAll('button'));
-    return btns.find(b => /Pintar/i.test((b.textContent||'').trim()));
+    return btns.find(b => /(Pintar|Paint)/i.test((b.textContent||'').trim()));
   }
   async function clickCommitOnly(){
     const btn = getCommitButton(); if(!btn) return false;
@@ -963,7 +963,7 @@
       if(state.toast.observer) return;
       const root = getToastRoot();
       state.toast.root = root;
-      const re = /Acabou a tinta|Out of paint/i;
+      const re = /Acabou a tinta|Out of paint|No more charges/i;
       const obs = new MutationObserver((muts)=>{
         if(state.toast.handling) return;
         const now = U.now();
