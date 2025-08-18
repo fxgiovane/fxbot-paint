@@ -12,7 +12,7 @@
 
 <div align="center">
 
-<img src="https://img.shields.io/badge/version-v7.2%20(API--free)-6a5acd?style=for-the-badge&labelColor=1b1b25">
+<img src="https://img.shields.io/badge/version-v8.0%20-6a5acd?style=for-the-badge&labelColor=1b1b25">
 <img src="https://img.shields.io/badge/status-active-2ecc71?style=for-the-badge&labelColor=1b1b25">
 <img src="https://img.shields.io/badge/license-MIT-95a5a6?style=for-the-badge&labelColor=1b1b25">
 <img src="https://img.shields.io/badge/language-JavaScript-f39c12?style=for-the-badge&labelColor=1b1b25&logo=javascript&logoColor=white">
