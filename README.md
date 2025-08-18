@@ -19,9 +19,8 @@
 
 </div>
 
-- **Última atualização:** 2025‑08‑13  
-- **API:** removida / indisponível (`401 Unauthorized`) — o bot funciona **100% via toast “Acabou a tinta”**  
-- **Fluxo:** pinta sem dó → toast → commit → aguarda cooldown → retoma sozinho  
+- **Última atualização:** 2025‑08‑18 (atualizado interface, processamento, overlay e cloudfire)
+- **API:** não utiliza (evite problemas com CLOUDFIRE)
 - **Execução rápida:** via **Bookmarklet** (`javascript:fetch(...)`) ou executando o `.js` no console  
 - **Atenção:** o site‑alvo recebe **atualizações diárias** — quebras e ajustes são **normais**
 
