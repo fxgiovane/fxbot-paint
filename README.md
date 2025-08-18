@@ -1,15 +1,4 @@
 # FXBot Paint 🎯
-
-<div align="center">
-
-**▌ <a href="#status">STATUS</a> ▌ <a href="#pt-br">PT‑BR</a> ▌ <a href="#english">ENGLISH</a> ▌ <a href="#info">INFO</a> ▌**
-
-</div>
-
----
-
-## STATUS
-
 <div align="center">
 
 <img src="https://img.shields.io/badge/version-v8.0%20-6a5acd?style=for-the-badge&labelColor=1b1b25">
@@ -18,6 +7,10 @@
 <img src="https://img.shields.io/badge/language-JavaScript-f39c12?style=for-the-badge&labelColor=1b1b25&logo=javascript&logoColor=white">
 
 </div>
+
+<br>
+<br>
+
 
 - **Última atualização:** 2025‑08‑18 (atualizado interface, processamento, overlay e cloudfire)
 - **API:** não utiliza (evite problemas com CLOUDFIRE)
@@ -113,10 +106,8 @@ It’s not hacking and doesn’t exploit vulnerabilities — it only automates y
 - **Repo:** https://github.com/fxgiovane/fxbot-paint  
 - **Main script:** `fxbot.js`  
 - **Execution:** Bookmarklet or Console (no external API required)  
-- **Engine:** toast‑driven ink control (commit → cooldown → resume)  
+- **Engine:** toast‑driven ink control
 - **Theme:** dark, minimal, neon accents  
-- **Contrib:** PRs e issues são bem‑vindos (relate o passo a passo para reproduzir)  
-
-> **Nota de compatibilidade:** extensões de bloqueio de scripts/ads podem interferir; se algo não iniciar, tente desativá‑las na página‑alvo.
+- **Contrib:** PRs e issues são bem‑vindos
 
 [🔼 Back to top](#fxbot-paint-)
