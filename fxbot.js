@@ -2,7 +2,6 @@
   'use strict';
 
   // ===== Config =====
-  // [PRO v8.3] Versão com correção de estado e otimização de ordem por cor.
   const VERSION = 'v8.1';
   const UI_TICK_MS = 500;
   const REOPEN_DELAY_MS = 2000;
@@ -27,7 +26,6 @@
   };
 
     // ===== i18n =====
-    // [PRO v8.3] Adicionada tradução para a nova ordem "Por Cor".
     const LANGS = {
         pt: {
             title: `FXBot ${VERSION}`,
@@ -140,7 +138,7 @@
     pixelSize:1,
     skipWhite:true, skipTransparent:true,
     whiteThr:250, alphaThr:100,
-    order:'bycolor', // [PRO v8.3] Ordem "por cor" agora é o padrão.
+    order:'bycolor',
     queue:[], queuePtr:0,
     palette:[], colorCache:new Map(),
     overlayCanvas:null, overlayNeedsRepaint:true,
@@ -585,7 +583,6 @@
   }
 
     // ===== Queue =====
-    // [PRO v8.3] Lógica de 'bycolor' aprimorada para máxima eficiência.
     function buildQueue() {
         state.colorCache.clear();
         state.queue = [];
@@ -833,15 +830,10 @@
     
     state.running=true; state.paused=false; state.stopFlag=false; state.loopActive=true;
     updateButtons(); startUITicker(); startToastObserver(); startSupervisor(); setStatus(t('started'));
-    
-    // [PRO v8.3] A variável de estado da cor é criada AQUI, uma única vez.
     const lastColorRef = { value: -1 };
-    
-    // O loop principal é iniciado, recebendo a referência de cor que persistirá.
     mainLoop(lastColorRef);
   }
 
-    // [PRO v8.3] Loop principal agora recebe 'lastColorRef' para manter o estado.
     const mainLoop = async (lastColorRef) => {
         if (!state.running || state.stopFlag) {
             finishRun();
