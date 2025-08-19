@@ -2,7 +2,8 @@
   'use strict';
 
   // ===== Config =====
-  const VERSION = 'v8.0';
+  // [PRO v8.3] Versão com correção de estado e otimização de ordem por cor.
+  const VERSION = 'v8.3-PRO';
   const UI_TICK_MS = 500;
   const REOPEN_DELAY_MS = 2000;
   const FULL_DEPLETION_REOPEN_MS = 35000;
@@ -25,101 +26,108 @@
     backdrop: 'rgba(0, 0, 0, 0.4)'
   };
 
-  // ===== i18n =====
-  const LANGS = {
-    pt: {
-      title: `FXBot ${VERSION}`,
-      tab_control: 'Controle',
-      tab_image: 'Imagem',
-      tab_advanced: 'Avançado',
-      upload:'Upload',
-      resize:'Redimensionar',
-      selectPos:'Definir Posição',
-      preview:'Mostrar Preview',
-      start:'Iniciar',
-      pause:'Pausar',
-      resume:'Retomar',
-      stop:'Parar',
-      builtQueue:'Fila criada: {n} pixels',
-      needImgPos:'Faça o upload da imagem e defina a posição no canvas.',
-      waitingClick:'Clique no CENTRO da sua arte, dentro do canvas.',
-      posOK:'Alinhado em X:{x} Y:{y}.',
-      loadOK:'Imagem: {w}×{h}',
-      overlayOn:'Overlay ON',
-      overlayOff:'Overlay OFF',
-      done:'✅ Concluído!',
-      paused:'⏸️ Pausado. Verifique a paleta de cores antes de retomar.',
-      resumed:'▶️ Retomando...',
-      stopped:'⏹️ Parado.',
-      committing:'⏳ Aplicando...',
-      committed:'✅ Aplicado.',
-      sessionSaved:'💾 Sessão salva.',
-      sessionLoaded:'📦 Sessão restaurada.',
-      toastHit:'⚠️ Sem tinta!',
-      coolingDown:'🧊 Cooldown {min}min... faltam {mmss}',
-      noCanvas:'ERRO: Canvas do site não encontrado!',
-      openPalette:'ERRO: Paleta de cores do site está fechada!',
-      colorMissing:'ERRO: Cor #{id} não encontrada na paleta! Pausando.',
-      nothingToPaint:'Nada a pintar com os filtros atuais.',
-      started:'🚀 Pintando...',
-      mustPickPos:'Defina a posição antes.',
-      mustUpload:'Envie a imagem antes.',
-      cooldownLabel:'Cooldown (min)',
-      speed:'Velocidade (CPS)',
-      skipWhite:'Pular Branco',
-      skipAlpha:'Pular Transparente',
-      processed:'Progresso',
-      manualStartLabel:'Início Manual',
-      manualStartIndex:'Pixel Inicial (#)',
-      captchaDetected: '⚠️ AÇÃO MANUAL: Resolva o Captcha para continuar!'
-    },
-    en: {
-      title: `FXBot ${VERSION}`,
-      tab_control: 'Control',
-      tab_image: 'Image',
-      tab_advanced: 'Advanced',
-      upload:'Upload',
-      resize:'Resize',
-      selectPos:'Set Position',
-      preview:'Show Preview',
-      start:'Start',
-      pause:'Pause',
-      resume:'Resume',
-      stop:'Stop',
-      builtQueue:'Queue built: {n} pixels',
-      needImgPos:'Upload an image and set the position on the canvas.',
-      waitingClick:'Click the CENTER of your art inside the canvas.',
-      posOK:'Aligned at X:{x} Y:{y}.',
-      loadOK:'Image: {w}×{h}',
-      overlayOn:'Overlay ON',
-      overlayOff:'Overlay OFF',
-      done:'✅ Done!',
-      paused:'⏸️ Paused. Check the color palette before resuming.',
-      resumed:'▶️ Resuming...',
-      stopped:'⏹️ Stopped.',
-      committing:'⏳ Committing...',
-      committed:'✅ Committed.',
-      sessionSaved:'💾 Session saved.',
-      sessionLoaded:'📦 Session restored.',
-      toastHit:'⚠️ Out of paint!',
-      coolingDown:'🧊 Cooldown {min}min... {mmss} left',
-      noCanvas:'ERROR: Site canvas not found!',
-      openPalette:'ERROR: Site color palette is closed!',
-      colorMissing:'ERROR: Color #{id} not found in palette! Pausing.',
-      nothingToPaint:'Nothing to paint with current filters.',
-      started:'🚀 Painting...',
-      mustPickPos:'Set position first.',
-      mustUpload:'Upload image first.',
-      cooldownLabel:'Cooldown (min)',
-      speed:'Speed (CPS)',
-      skipWhite:'Skip White',
-      skipAlpha:'Skip Transparent',
-      processed:'Progress',
-      manualStartLabel:'Manual Start',
-      manualStartIndex:'Start Pixel (#)',
-      captchaDetected: '⚠️ MANUAL ACTION: Solve the Captcha to continue!'
-    }
-  };
+    // ===== i18n =====
+    // [PRO v8.3] Adicionada tradução para a nova ordem "Por Cor".
+    const LANGS = {
+        pt: {
+            title: `FXBot ${VERSION}`,
+            tab_control: 'Controle',
+            tab_image: 'Imagem',
+            tab_advanced: 'Avançado',
+            upload:'Upload',
+            resize:'Redimensionar',
+            selectPos:'Definir Posição',
+            preview:'Mostrar Preview',
+            start:'Iniciar',
+            pause:'Pausar',
+            resume:'Retomar',
+            stop:'Parar',
+            builtQueue:'Fila criada: {n} pixels',
+            needImgPos:'Faça o upload da imagem e defina a posição no canvas.',
+            waitingClick:'Clique no CENTRO da sua arte, dentro do canvas.',
+            posOK:'Alinhado em X:{x} Y:{y}.',
+            loadOK:'Imagem: {w}×{h}',
+            overlayOn:'Overlay ON',
+            overlayOff:'Overlay OFF',
+            done:'✅ Concluído!',
+            paused:'⏸️ Pausado. Verifique a paleta de cores antes de retomar.',
+            resumed:'▶️ Retomando...',
+            stopped:'⏹️ Parado.',
+            committing:'⏳ Aplicando...',
+            committed:'✅ Aplicado.',
+            sessionSaved:'💾 Sessão salva.',
+            sessionLoaded:'📦 Sessão restaurada.',
+            toastHit:'⚠️ Sem tinta!',
+            coolingDown:'🧊 Cooldown {min}min... faltam {mmss}',
+            noCanvas:'ERRO: Canvas do site não encontrado!',
+            openPalette:'ERRO: Paleta de cores do site está fechada!',
+            colorMissing:'ERRO: Cor #{id} não encontrada na paleta! Pausando.',
+            nothingToPaint:'Nada a pintar com os filtros atuais.',
+            started:'🚀 Pintando...',
+            mustPickPos:'Defina a posição antes.',
+            mustUpload:'Envie a imagem antes.',
+            cooldownLabel:'Cooldown (min)',
+            speed:'Velocidade (CPS)',
+            order: 'Ordem de Pintura',
+            order_scanline: 'Linha por Linha',
+            order_bycolor: 'Por Cor (Eficiente)',
+            skipWhite:'Pular Branco',
+            skipAlpha:'Pular Transparente',
+            processed:'Progresso',
+            manualStartLabel:'Início Manual',
+            manualStartIndex:'Pixel Inicial (#)',
+            captchaDetected: '⚠️ AÇÃO MANUAL: Resolva o Captcha para continuar!'
+        },
+        en: {
+            title: `FXBot ${VERSION}`,
+            tab_control: 'Control',
+            tab_image: 'Image',
+            tab_advanced: 'Advanced',
+            upload:'Upload',
+            resize:'Resize',
+            selectPos:'Set Position',
+            preview:'Show Preview',
+            start:'Start',
+            pause:'Pause',
+            resume:'Resume',
+            stop:'Stop',
+            builtQueue:'Queue built: {n} pixels',
+            needImgPos:'Upload an image and set the position on the canvas.',
+            waitingClick:'Click the CENTER of your art inside the canvas.',
+            posOK:'Aligned at X:{x} Y:{y}.',
+            loadOK:'Image: {w}×{h}',
+            overlayOn:'Overlay ON',
+            overlayOff:'Overlay OFF',
+            done:'✅ Done!',
+            paused:'⏸️ Paused. Check the color palette before resuming.',
+            resumed:'▶️ Resuming...',
+            stopped:'⏹️ Stopped.',
+            committing:'⏳ Committing...',
+            committed:'✅ Committed.',
+            sessionSaved:'💾 Session saved.',
+            sessionLoaded:'📦 Session restored.',
+            toastHit:'⚠️ Out of paint!',
+            coolingDown:'🧊 Cooldown {min}min... {mmss} left',
+            noCanvas:'ERROR: Site canvas not found!',
+            openPalette:'ERROR: Site color palette is closed!',
+            colorMissing:'ERROR: Color #{id} not found in palette! Pausing.',
+            nothingToPaint:'Nothing to paint with current filters.',
+            started:'🚀 Painting...',
+            mustPickPos:'Set position first.',
+            mustUpload:'Upload image first.',
+            cooldownLabel:'Cooldown (min)',
+            speed:'Speed (CPS)',
+            order: 'Paint Order',
+            order_scanline: 'Scanline',
+            order_bycolor: 'By Color (Efficient)',
+            skipWhite:'Skip White',
+            skipAlpha:'Skip Transparent',
+            processed:'Progress',
+            manualStartLabel:'Manual Start',
+            manualStartIndex:'Start Pixel (#)',
+            captchaDetected: '⚠️ MANUAL ACTION: Solve the Captcha to continue!'
+        }
+    };
 
   const detectBrowserLang = () => (navigator.language.startsWith('pt') ? 'pt' : 'en');
   const sessLangKey = () => `fxbot-lang:${location.host}`;
@@ -132,7 +140,7 @@
     pixelSize:1,
     skipWhite:true, skipTransparent:true,
     whiteThr:250, alphaThr:100,
-    order:'scanline',
+    order:'bycolor', // [PRO v8.3] Ordem "por cor" agora é o padrão.
     queue:[], queuePtr:0,
     palette:[], colorCache:new Map(),
     overlayCanvas:null, overlayNeedsRepaint:true,
@@ -144,6 +152,7 @@
     committing:false,
     applied:{ set:new Set(), pending:[], pendingSet:new Set() },
     loopActive:false, lastPaintTs:0,
+    loopRequestId: null,
     uiTicker:null,
     ui:{ keydownHandler:null, uiRoot: null },
     lang: (localStorage.getItem(sessLangKey()) || 'auto'),
@@ -241,7 +250,7 @@
       state.pixelSize=obj.pixelSize||1;
       state.skipWhite= !!obj.skipWhite; state.skipTransparent= !!obj.skipTransparent;
       state.whiteThr= obj.whiteThr ?? 250; state.alphaThr= obj.alphaThr ?? 100;
-      state.order= obj.order || 'scanline';
+      state.order= obj.order || 'bycolor';
       state.cps= obj.cps ?? 80;
       state.queuePtr= obj.queuePtr ?? 0;
       state.cooldownMin = obj.cooldownMin ?? DEFAULT_COOLDOWN_MIN;
@@ -322,6 +331,14 @@
                 <label>${t('speed')}<input id="fx-cps" type="number" min="1" max="1000" value="${state.cps}"></label>
             </div>
             <div class="adv-group">
+              <label>${t('order')}
+                <select id="fx-order">
+                  <option value="bycolor" ${state.order === 'bycolor' ? 'selected' : ''}>${t('order_bycolor')}</option>
+                  <option value="scanline" ${state.order === 'scanline' ? 'selected' : ''}>${t('order_scanline')}</option>
+                </select>
+              </label>
+            </div>
+            <div class="adv-group">
               <label class="checkbox-label">${t('skipWhite')} <input id="fx-skipw" type="checkbox" ${state.skipWhite?'checked':''}></label>
               <label class="checkbox-label">${t('skipAlpha')} <input id="fx-skipa" type="checkbox" ${state.skipTransparent?'checked':''}></label>
             </div>
@@ -354,6 +371,7 @@
 
     const onInput = (sel, fn) => g(sel)?.addEventListener('input', fn);
     onInput('#fx-cps', e => state.cps = U.clamp(parseInt(e.target.value, 10) || 80, 1, 1000));
+    g('#fx-order')?.addEventListener('change', e => { state.order = e.target.value; });
     g('#fx-skipw')?.addEventListener('change', e => { state.skipWhite = e.target.checked; markOverlayDirty(); refreshOverlay(); });
     g('#fx-skipa')?.addEventListener('change', e => { state.skipTransparent = e.target.checked; markOverlayDirty(); refreshOverlay(); });
     onInput('#cooldown-min', e => { state.cooldownMin = U.clamp(parseInt(e.target.value, 10) || DEFAULT_COOLDOWN_MIN, 1, 60); });
@@ -566,40 +584,53 @@
     state.overlayCanvas.style.top =(rect.top +window.scrollY+state.pos.y)+'px';
   }
 
-  // ===== Queue =====
-  function buildQueue(){
-    state.colorCache.clear();
-    state.queue=[];
-    const w=state.imgWidth, h=state.imgHeight, data=state.imgData?.data; if(!data) return;
+    // ===== Queue =====
+    // [PRO v8.3] Lógica de 'bycolor' aprimorada para máxima eficiência.
+    function buildQueue() {
+        state.colorCache.clear();
+        state.queue = [];
+        const w = state.imgWidth, h = state.imgHeight, data = state.imgData?.data;
+        if (!data) return;
 
-    for(let y=0;y<h;y++){
-      for(let x=0;x<w;x++){
-        const idx=(y*w+x)*4;
-        const r=data[idx], g=data[idx+1], b=data[idx+2], a=data[idx+3];
-        if((state.skipTransparent && a<state.alphaThr) || (state.skipWhite && r>=state.whiteThr && g>=state.whiteThr && b>=state.whiteThr)) continue;
-        
-        let best=state.colorCache.get(`${r},${g},${b}`);
-        if(!best){
-          let md=Infinity, sel=state.palette[0]||{id:0,rgb:[r,g,b]};
-          if(state.palette.length){ for(const p of state.palette){ const d=U.colorDist([r,g,b],p.rgb); if(d<md){md=d; sel=p;} } }
-          best=sel; state.colorCache.set(`${r},${g},${b}`,best);
+        const pixelsToProcess = [];
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const idx = (y * w + x) * 4;
+                const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
+                if ((state.skipTransparent && a < state.alphaThr) || (state.skipWhite && r >= state.whiteThr && g >= state.whiteThr && b >= state.whiteThr)) continue;
+
+                let best = state.colorCache.get(`${r},${g},${b}`);
+                if (!best) {
+                    let md = Infinity, sel = state.palette[0] || { id: 0, rgb: [r, g, b] };
+                    if (state.palette.length) { for (const p of state.palette) { const d = U.colorDist([r, g, b], p.rgb); if (d < md) { md = d; sel = p; } } }
+                    best = sel; state.colorCache.set(`${r},${g},${b}`, best);
+                }
+
+                const c = imageToCanvas(x, y);
+                if (!c || state.applied.set.has(`${c.x},${c.y}`)) continue;
+
+                pixelsToProcess.push({ x, y, colorId: best.id, rgb: best.rgb, canvas: c });
+            }
         }
-        
-        const c = imageToCanvas(x,y);
-        if(!c || state.applied.set.has(`${c.x},${c.y}`)) continue;
-        
-        state.queue.push({x,y, colorId: best.id, rgb: best.rgb, canvas:c});
-      }
+
+        if (state.order === 'bycolor') {
+            const byColor = new Map();
+            for (const p of pixelsToProcess) {
+                if (!byColor.has(p.colorId)) byColor.set(p.colorId, []);
+                byColor.get(p.colorId).push(p);
+            }
+            const sortedKeys = Array.from(byColor.keys()).sort((a, b) => a - b);
+            for (const key of sortedKeys) {
+                state.queue.push(...byColor.get(key));
+            }
+        } else { // scanline
+            state.queue = pixelsToProcess;
+        }
+
+        setStatus(t('builtQueue', { n: state.queue.length }));
+        state.totalTarget = state.applied.set.size + state.queue.length;
+        updateProgress();
     }
-    
-    if(state.order==='center'){
-      const centerX=(w-1)/2, centerY=(h-1)/2;
-      state.queue.sort((a,b)=>((a.x-centerX)**2+(a.y-centerY)**2)-((b.x-centerX)**2+(b.y-centerY)**2));
-    }
-    setStatus(t('builtQueue', {n: state.queue.length}));
-    state.totalTarget = state.applied.set.size + state.queue.length;
-    updateProgress();
-  }
   function imageToCanvas(ix,iy){
     const rect=canvasRect(); if(!rect||!state.pos) return null;
     const s=Math.max(1,state.pixelSize|0);
@@ -609,36 +640,52 @@
     return {x:clickX,y:clickY};
   }
 
-  // ===== Clicks =====
-  function clickCanvasSynthetic(canvas, cx, cy){
-    const rect=canvasRect(); if(!rect) return;
-    const absX=Math.round(rect.left + cx);
-    const absY=Math.round(rect.top  + cy);
-    const common={clientX:absX, clientY:absY, bubbles:true, cancelable:true, pointerId:1, isPrimary:true, buttons:1};
-    canvas.dispatchEvent(new PointerEvent('pointerdown', {...common, button:0}));
-    canvas.dispatchEvent(new MouseEvent('click', {clientX:absX, clientY:absY, button:0, bubbles:true, cancelable:true}));
-    canvas.dispatchEvent(new PointerEvent('pointerup',   {...common, button:0}));
-  }
-  
-  async function paintCanvasOnce(it, lastColorRef){
-    const canvas = getTargetCanvas(); if(!canvas) return false;
-    const key = `${it.canvas.x},${it.canvas.y}`;
-    if(state.applied.set.has(key) || state.applied.pendingSet.has(key)) return false;
+    // ===== Clicks =====
+    function clickCanvasSynthetic(canvas, cx, cy) {
+        const rect = canvasRect();
+        if (!rect) return;
 
-    if(lastColorRef.value !== it.colorId){
-      if (!selectColor(it.colorId)) {
-        return false;
-      }
-      lastColorRef.value = it.colorId;
+        const absX = Math.round(rect.left + cx);
+        const absY = Math.round(rect.top + cy);
+
+        const commonPointer = { clientX: absX, clientY: absY, bubbles: true, cancelable: true, pointerId: 1, isPrimary: true, button: 0, buttons: 1 };
+        const commonMouse = { clientX: absX, clientY: absY, bubbles: true, cancelable: true, button: 0, buttons: 1 };
+
+        canvas.dispatchEvent(new PointerEvent('pointerdown', commonPointer));
+        canvas.dispatchEvent(new MouseEvent('mousedown', commonMouse));
+        canvas.dispatchEvent(new PointerEvent('pointerup', commonPointer));
+        canvas.dispatchEvent(new MouseEvent('mouseup', commonMouse));
+        canvas.dispatchEvent(new MouseEvent('click', commonMouse));
+    }
+  
+    function isPixelProcessed(it) {
+        if (!it) return true;
+        const key = `${it.canvas.x},${it.canvas.y}`;
+        return state.applied.set.has(key) || state.applied.pendingSet.has(key);
     }
     
-    state.applied.pending.push({k:key, t: U.now(), it});
-    state.applied.pendingSet.add(key);
-    state.queuePtr++;
-    
-    clickCanvasSynthetic(canvas, it.canvas.x, it.canvas.y);
-    return true;
-  }
+    async function paintCanvasOnce(it, lastColorRef) {
+        const canvas = getTargetCanvas();
+        if (!canvas) {
+            setStatus(t('noCanvas'), 'error');
+            pausePainting();
+            return false;
+        }
+
+        if (lastColorRef.value !== it.colorId) {
+            if (!selectColor(it.colorId)) {
+                return false; 
+            }
+            lastColorRef.value = it.colorId;
+        }
+        
+        const key = `${it.canvas.x},${it.canvas.y}`;
+        state.applied.pending.push({ k: key, t: U.now(), it });
+        state.applied.pendingSet.add(key);
+        
+        clickCanvasSynthetic(canvas, it.canvas.x, it.canvas.y);
+        return true;
+    }
 
   // ===== Commit helpers =====
   function getCommitButton(){ return U.qsa('button').find(b => /(Pintar|Paint)/i.test(b.textContent.trim())); }
@@ -758,7 +805,7 @@
   function stopUITicker(){ if(state.uiTicker){ clearInterval(state.uiTicker); state.uiTicker=null; } }
 
   // ===== Runner =====
-  async function startPainting(){
+  async function startPainting() {
     if(state.loopActive){ showToast('Already running', 'warn'); return; }
     if(!state.imgData){ setStatus(t('mustUpload')); showToast(t('mustUpload'), 'error'); return; }
     if(!state.pos){ setStatus(t('mustPickPos')); showToast(t('mustPickPos'), 'error'); return; }
@@ -787,48 +834,75 @@
     state.running=true; state.paused=false; state.stopFlag=false; state.loopActive=true;
     updateButtons(); startUITicker(); startToastObserver(); startSupervisor(); setStatus(t('started'));
     
-    const baseInterval=() => 1000 / U.clamp(state.cps,1,1000);
+    // [PRO v8.3] A variável de estado da cor é criada AQUI, uma única vez.
     const lastColorRef = { value: -1 };
     
-    while(state.running && !state.stopFlag){
-      if(state.paused || state.captchaHold){ await U.sleep(250); continue; }
-      if (state.queuePtr >= state.queue.length){
-        if(state.applied.pending.length) await commitAndSync();
-        break;
-      }
-      
-      const it=state.queue[state.queuePtr];
-      if(!it || state.applied.set.has(`${it.canvas.x},${it.canvas.y}`)) { state.queuePtr++; continue; }
-      
-      const now = U.now();
-      const elapsed = now - state.lastPaintTs;
-      const need = baseInterval();
-      if(elapsed < need) await U.sleep(need - elapsed);
-      if(!state.running||state.stopFlag) break;
-      
-      const paintOk = await paintCanvasOnce(it, lastColorRef);
-      if (!paintOk) {
-        const msg = t('colorMissing', {id: it.colorId});
-        setStatus(msg, 'warn');
-        showToast(msg, 'error');
-        pausePainting();
-        continue;
-      }
-
-      updateProgress();
-      
-      state.sinceSave++;
-      if(state.sinceSave >= AUTOSAVE_EVERY_N_PIXELS){
-        saveSession('silent');
-        state.sinceSave = 0;
-      }
-
-      state.lastPaintTs = U.now();
-    }
-    finishRun();
+    // O loop principal é iniciado, recebendo a referência de cor que persistirá.
+    mainLoop(lastColorRef);
   }
+
+    // [PRO v8.3] Loop principal agora recebe 'lastColorRef' para manter o estado.
+    const mainLoop = async (lastColorRef) => {
+        if (!state.running || state.stopFlag) {
+            finishRun();
+            return;
+        }
+
+        if (state.paused || state.captchaHold) {
+            state.loopRequestId = requestAnimationFrame(() => mainLoop(lastColorRef));
+            return;
+        }
+
+        if (state.queuePtr >= state.queue.length) {
+            if (state.applied.pending.length > 0) {
+                setStatus(t('committing'));
+                await commitAndSync();
+            }
+            finishRun();
+            return;
+        }
+
+        const it = state.queue[state.queuePtr];
+        if (isPixelProcessed(it)) {
+            state.queuePtr++;
+            state.loopRequestId = requestAnimationFrame(() => mainLoop(lastColorRef));
+            return;
+        }
+        
+        const baseInterval = 1000 / U.clamp(state.cps, 1, 1000);
+        const now = U.now();
+        const elapsed = now - state.lastPaintTs;
+
+        if (elapsed >= baseInterval) {
+            state.lastPaintTs = now;
+
+            const paintOk = await paintCanvasOnce(it, lastColorRef);
+
+            if (!paintOk) {
+                const msg = t('colorMissing', {id: it.colorId});
+                setStatus(msg, 'warn');
+                showToast(msg, 'error');
+                pausePainting();
+            } else {
+                updateProgress();
+                state.sinceSave++;
+                if (state.sinceSave >= AUTOSAVE_EVERY_N_PIXELS) {
+                    saveSession('silent');
+                    state.sinceSave = 0;
+                }
+            }
+            
+            state.queuePtr++;
+        }
+
+        state.loopRequestId = requestAnimationFrame(() => mainLoop(lastColorRef));
+    };
   
   function finishRun(){
+    if (state.loopRequestId) {
+        cancelAnimationFrame(state.loopRequestId);
+        state.loopRequestId = null;
+    }
     state.running=false; state.loopActive=false; state.committing=false;
     stopUITicker(); stopToastObserver(); stopSupervisor(); updateButtons(); saveSession('finish');
     setStatus(state.stopFlag ? t('stopped') : t('done'));
@@ -864,6 +938,10 @@
   }
   function stopPainting(){
     state.stopFlag=true; state.running=false; state.loopActive=false;
+    if (state.loopRequestId) {
+        cancelAnimationFrame(state.loopRequestId);
+        state.loopRequestId = null;
+    }
     stopUITicker(); stopToastObserver(); stopSupervisor();
     state.queue.length = 0; state.queuePtr = 0; state.totalTarget = 0;
     state.applied.set.clear(); state.applied.pending.length = 0; state.applied.pendingSet.clear();
@@ -894,6 +972,7 @@
     setVal('#cooldown-min', state.cooldownMin);
     setChk('#fx-manualstart-en', state.manualStart.enabled);
     setVal('#fx-manualstart-idx', state.manualStart.index || 0);
+    const orderEl = U.qs('#fx-order'); if (orderEl) orderEl.value = state.order;
   }
   function enableAfterImg(){ U.qsa('#fx-resize, #fx-pos, #fx-preview, #fx-start').forEach(b => b.disabled=false); }
 
