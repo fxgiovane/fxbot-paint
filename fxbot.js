@@ -3,7 +3,7 @@
 
   // ===== Config =====
   // [PRO v8.3] Versão com correção de estado e otimização de ordem por cor.
-  const VERSION = 'v8.3-PRO';
+  const VERSION = 'v8.1';
   const UI_TICK_MS = 500;
   const REOPEN_DELAY_MS = 2000;
   const FULL_DEPLETION_REOPEN_MS = 35000;
